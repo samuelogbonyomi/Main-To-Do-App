@@ -1,0 +1,7 @@
+{
+  "name": "ZenDo - AI Task Manager",
+  "description": "A neo-brutalist styled To-Do application featuring a daily verse dashboard, overdue task tracking, and AI-powered task creation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
