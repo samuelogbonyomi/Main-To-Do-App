@@ -10,100 +10,78 @@ interface TaskItemProps {
 
 export const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, isOverdue }) => {
   const getDueString = () => {
-    if (task.isCompleted) return <span className="text-[#369574] font-normal text-xs">Done!</span>;
-    if (isOverdue) return <span className="text-[#C94646] font-normal text-xs">Due {getRelativeTime(task.dueDate)}</span>;
+    if (task.isCompleted) return <span className="text-[#369574] font-medium text-xs">Completed</span>;
+    if (isOverdue) return <span className="text-[#C94646] font-medium text-xs">Due {getRelativeTime(task.dueDate)}</span>;
     
     // Normal format
     const timeStr = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: true }).format(task.dueDate);
-    return <span className="text-white/60 font-normal text-xs">Due {timeStr}</span>;
+    return <span className="text-white/40 font-normal text-xs font-mono">Due {timeStr}</span>;
   };
 
   const getRelativeTime = (date: Date) => {
     const diff = new Date().getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 3600 * 24));
     if (days === 0) return 'today';
-    if (days === 1) return '1 day ago';
-    return `${Math.abs(days)} days ago`;
+    if (days === 1) return '1d ago';
+    return `${Math.abs(days)}d ago`;
   };
 
-  // Color Constants from Design
-  const RED = '#C94646';
-  const GREEN = '#369574';
-  const YELLOW_ORANGE = '#F5BB6E';
-  const ORANGE = '#D48621';
-  const DARK_BG = '#1E1E1E';
+  // Modern Crypto Theme Colors
+  const COMPLETED_COLOR = '#27D17F';
+  const OVERDUE_COLOR = '#E95D5D';
+  const PENDING_COLOR = '#D48621';
 
-  // State Logic
-  // 1. Indicator Bar (Left Side):
-  //    - Overdue: Red
-  //    - Completed: Green
-  //    - Pending (Normal): Yellow/Orange
-  //
-  // 2. Checkbox:
-  //    - Completed: Green Background, Green Border
-  //    - Pending (Any, including Overdue): Dark BG (#1E1E1E), Orange Border (#D48621)
-
-  let indicatorColor = YELLOW_ORANGE; 
-  let checkboxBorderColor = ORANGE;
-  let checkboxBgColor = DARK_BG;
+  let borderColor = 'border-[#222222]'; // Default subtle border
+  let glowStyle = {};
 
   if (task.isCompleted) {
-    indicatorColor = GREEN;
-    checkboxBorderColor = GREEN;
-    checkboxBgColor = GREEN;
+    borderColor = 'border-[#27D17F]/30';
   } else if (isOverdue) {
-    indicatorColor = RED;
-    // Overdue tasks still use the standard pending checkbox style
-    checkboxBorderColor = ORANGE;
-    checkboxBgColor = DARK_BG;
-  } else {
-    // Normal Pending
-    indicatorColor = YELLOW_ORANGE;
-    checkboxBorderColor = ORANGE;
-    checkboxBgColor = DARK_BG;
+    borderColor = 'border-[#E95D5D]/30';
   }
 
   return (
     <div 
-      className="relative w-full group transition-transform hover:scale-[1.01] cursor-pointer"
+      className={`relative w-full group transition-all duration-300 cursor-pointer ${task.isCompleted ? 'opacity-60 hover:opacity-100' : ''}`}
       onClick={() => onToggle(task.id)}
     >
-      {/* Status Indicator - Left */}
       <div 
-        className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full" 
-        style={{ backgroundColor: indicatorColor }}
-      ></div>
-
-      {/* Status Indicator - Right */}
-      <div 
-        className="absolute -right-1 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full" 
-        style={{ backgroundColor: indicatorColor }}
-      ></div>
-
-      <div 
-        className="w-full h-[60px] bg-[#121017] rounded-2xl border border-[#231E2F] flex items-center px-6"
+        className={`
+          w-full min-h-[72px] bg-[#131313] rounded-xl border ${borderColor} 
+          flex items-center px-5 py-3 shadow-lg 
+          group-hover:bg-[#1A1A1A] group-hover:border-white/10 group-hover:translate-x-1 transition-all
+        `}
       >
-        {/* Checkbox */}
+        {/* Checkbox (Custom styled) */}
         <div
           className={`
-            w-4 h-4 rounded-[6px] border-2 flex items-center justify-center mr-4 shrink-0 transition-all
+            w-5 h-5 rounded-md border flex items-center justify-center mr-5 shrink-0 transition-all duration-300
+            ${task.isCompleted 
+              ? `bg-[${COMPLETED_COLOR}]/20 border-[${COMPLETED_COLOR}]` 
+              : `bg-transparent border-white/20 group-hover:border-[${PENDING_COLOR}]`
+            }
           `}
-          style={{ 
-            borderColor: checkboxBorderColor, 
-            backgroundColor: checkboxBgColor
-          }}
         >
-          {task.isCompleted && <Check size={10} strokeWidth={4} color="white" />}
+          {task.isCompleted && <Check size={12} strokeWidth={3} color={COMPLETED_COLOR} />}
         </div>
 
         {/* Content */}
-        <div className="flex flex-col justify-center">
-          <span className={`font-semibold text-sm text-white leading-tight ${task.isCompleted ? 'line-through decoration-white/50 text-white/50' : ''}`}>
+        <div className="flex flex-col justify-center flex-1">
+          <span className={`font-medium text-sm text-white leading-tight mb-1 transition-colors ${task.isCompleted ? 'text-white/30 line-through' : 'group-hover:text-white'}`}>
             {task.title}
           </span>
-          <div className="mt-0.5 leading-none">
-            {getDueString()}
+          <div className="flex items-center gap-3">
+             {/* Category Tag */}
+             <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border border-white/5 ${task.isCompleted ? 'text-white/20 bg-white/5' : 'text-white/40 bg-white/5'}`}>
+               {task.category}
+             </span>
+             {getDueString()}
           </div>
+        </div>
+
+        {/* Right side arrow/indicator (decorative) */}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-white/20">
+           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { TaskList } from './components/TaskList';
 import { AddTaskModal } from './components/AddTaskModal';
 import { VoiceModeModal } from './components/VoiceModeModal';
 import { Task } from './types';
-import { Plus, Mic, PenLine, X } from 'lucide-react';
+import { Plus, Mic, PenLine } from 'lucide-react';
 
 // Mock initial data
 const INITIAL_TASKS: Task[] = [
@@ -152,10 +152,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#18161F] font-['IBM_Plex_Sans'] flex justify-center overflow-x-hidden text-white">
+    <div className="min-h-screen bg-[#050505] font-['IBM_Plex_Sans'] flex justify-center overflow-x-hidden text-white selection:bg-[#D48621]/30">
       
+      {/* Background ambient glow */}
+      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#15151A] to-transparent pointer-events-none z-0"></div>
+
       {/* Main Container */}
-      <div className="w-full max-w-[856px] relative flex flex-col min-h-screen">
+      <div className="w-full max-w-[900px] relative flex flex-col min-h-screen z-10">
         
         {/* Content Area */}
         <div className="flex-1 p-6 md:p-10 pb-32">
@@ -177,9 +180,9 @@ const App: React.FC = () => {
              {/* Manually Option */}
              <button 
                 onClick={openManual}
-                className="bg-[#231E2F] text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 hover:bg-[#322B42] hover:-translate-y-1 transition-all pointer-events-auto border border-white/10 group"
+                className="bg-[#131313] text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 hover:bg-[#1A1A1A] hover:-translate-y-1 transition-all pointer-events-auto border border-white/5 group backdrop-blur-md"
              >
-                <div className="w-8 h-8 rounded-full bg-[#D48621]/20 flex items-center justify-center text-[#D48621] group-hover:bg-[#D48621] group-hover:text-white transition-colors">
+                <div className="w-8 h-8 rounded-full bg-[#D48621]/10 flex items-center justify-center text-[#D48621] group-hover:bg-[#D48621] group-hover:text-white transition-colors">
                   <PenLine size={16} />
                 </div>
                 <span className="font-semibold text-sm">Manually</span>
@@ -188,9 +191,9 @@ const App: React.FC = () => {
              {/* Dictate Option */}
              <button 
                 onClick={openVoice}
-                className="bg-[#231E2F] text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 hover:bg-[#322B42] hover:-translate-y-1 transition-all pointer-events-auto border border-white/10 group"
+                className="bg-[#131313] text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 hover:bg-[#1A1A1A] hover:-translate-y-1 transition-all pointer-events-auto border border-white/5 group backdrop-blur-md"
              >
-                <div className="w-8 h-8 rounded-full bg-[#493DD3]/20 flex items-center justify-center text-[#493DD3] group-hover:bg-[#493DD3] group-hover:text-white transition-colors">
+                <div className="w-8 h-8 rounded-full bg-[#8A2BE2]/10 flex items-center justify-center text-[#8A2BE2] group-hover:bg-[#8A2BE2] group-hover:text-white transition-colors">
                   <Mic size={16} />
                 </div>
                 <span className="font-semibold text-sm">Dictate</span>
@@ -203,11 +206,11 @@ const App: React.FC = () => {
             onClick={() => setIsFabOpen(!isFabOpen)}
             className={`
               pointer-events-auto relative z-50 
-              bg-[#D48621] hover:bg-[#b5701a] text-white 
-              w-16 h-16 rounded-2xl shadow-2xl 
+              bg-gradient-to-br from-[#D48621] to-[#B06D15] hover:from-[#E59732] hover:to-[#C27E26] text-white 
+              w-16 h-16 rounded-2xl shadow-[0_8px_30px_rgba(212,134,33,0.3)] 
               flex items-center justify-center 
-              transition-all duration-300
-              ${isFabOpen ? 'rotate-45 bg-[#C94646] hover:bg-[#a33232]' : 'hover:scale-105 hover:shadow-[#D48621]/20'}
+              transition-all duration-300 border border-white/10
+              ${isFabOpen ? 'rotate-45 from-[#C94646] to-[#A33232] shadow-[0_8px_30px_rgba(201,70,70,0.3)]' : 'hover:scale-105'}
             `}
           >
             <Plus size={32} strokeWidth={2.5} />

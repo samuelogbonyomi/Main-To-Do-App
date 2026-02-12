@@ -49,26 +49,23 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
     <div className="flex-1 w-full">
       
       {/* Tabs Header */}
-      <div className="flex items-center gap-5 mb-8">
-        <h2 className="text-2xl font-semibold text-white">My Tasks</h2>
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-xl font-medium text-white tracking-wide">Your Tasks</h2>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center p-1 bg-[#131313] border border-[#222222] rounded-xl">
           {/* Today Tab */}
           <button
             onClick={() => setActiveTab('Today')}
             className={`
-              pl-3 pr-2 py-2 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all
+              px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
               ${activeTab === 'Today' 
-                ? 'bg-[#231E2F] text-white' 
-                : 'bg-transparent text-white/50 hover:bg-[#231E2F]/50'
+                ? 'bg-[#222222] text-white shadow-sm' 
+                : 'bg-transparent text-white/40 hover:text-white/60'
               }
             `}
           >
             Today
-            <span className={`
-               w-[22px] h-[20px] rounded-md text-xs font-semibold flex items-center justify-center
-               ${activeTab === 'Today' ? 'bg-[#369574] text-white' : 'bg-[#322B42] text-white/60'}
-            `}>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] ${activeTab === 'Today' ? 'bg-[#D48621]/20 text-[#D48621]' : 'bg-white/10 text-white/40'}`}>
               {todayCount}
             </span>
           </button>
@@ -77,17 +74,17 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
           <button
             onClick={() => setActiveTab('Later')}
             className={`
-              pl-3 pr-2 py-2 rounded-xl text-sm font-semibold flex items-center gap-3 transition-all border border-transparent
+              px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
               ${activeTab === 'Later' 
-                 ? 'bg-[#231E2F] text-white border-[#322B42]' 
-                : 'bg-transparent border-[#322B42] text-white hover:bg-[#231E2F]/50'
+                ? 'bg-[#222222] text-white shadow-sm' 
+                : 'bg-transparent text-white/40 hover:text-white/60'
               }
             `}
           >
             Later
-            <div className="relative w-[23px] h-[20px] bg-[#D48621] rounded-md flex items-center justify-center">
-               <span className="text-[#FFF4D9] text-xs font-semibold">{laterCount}</span>
-            </div>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] ${activeTab === 'Later' ? 'bg-[#8A2BE2]/20 text-[#8A2BE2]' : 'bg-white/10 text-white/40'}`}>
+              {laterCount}
+            </span>
           </button>
         </div>
       </div>
@@ -98,8 +95,11 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
         {/* Overdue Section */}
         {overdueTasks.length > 0 && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 relative">
-            <h3 className="text-xs font-medium text-white/60 tracking-[0.08em] mb-4 uppercase ml-1">Overdue Tasks</h3>
-            <div className="flex flex-col gap-4">
+            <h3 className="text-[10px] font-semibold text-[#E95D5D] tracking-widest mb-4 uppercase ml-1 flex items-center gap-2">
+               <span className="w-1.5 h-1.5 rounded-full bg-[#E95D5D] animate-pulse"></span>
+               Action Required
+            </h3>
+            <div className="flex flex-col gap-3">
               {overdueTasks.map(task => (
                 <TaskItem 
                   key={task.id} 
@@ -115,8 +115,10 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
         {/* To Do Section */}
         {(todoTasks.length > 0 || completedTasks.length > 0) && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
-            <h3 className="text-xs font-medium text-white/60 tracking-[0.08em] mb-4 uppercase ml-1">To Do</h3>
-            <div className="flex flex-col gap-4">
+            {overdueTasks.length > 0 && (
+               <h3 className="text-[10px] font-semibold text-white/40 tracking-widest mb-4 uppercase ml-1">In Progress</h3>
+            )}
+            <div className="flex flex-col gap-3">
               {todoTasks.map(task => (
                 <TaskItem 
                   key={task.id} 
@@ -139,12 +141,12 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
 
         {/* Empty State */}
         {relevantTasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 opacity-50">
-             <div className="w-16 h-16 bg-[#231E2F] rounded-full flex items-center justify-center mb-4 border border-[#322B42]">
-                <span className="text-2xl">🌱</span>
+          <div className="flex flex-col items-center justify-center py-20 opacity-30">
+             <div className="w-20 h-20 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-4">
+                <span className="text-3xl grayscale">✨</span>
              </div>
-             <p className="text-white font-bold">No tasks due.</p>
-             <p className="text-sm text-gray-400">Enjoy your free time!</p>
+             <p className="text-white font-medium text-sm">All caught up</p>
+             <p className="text-xs text-white/40 mt-1">System status: Idle</p>
           </div>
         )}
       </div>
