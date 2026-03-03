@@ -49,23 +49,23 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
     <div className="flex-1 w-full">
       
       {/* Tabs Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-medium text-white tracking-wide">Your Tasks</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-sm font-mono font-medium text-zinc-400 uppercase tracking-wider">Task Queue</h2>
         
-        <div className="flex items-center p-1 bg-[#131313] border border-[#222222] rounded-xl">
+        <div className="flex items-center p-1 bg-zinc-900/50 border border-zinc-800 rounded-lg">
           {/* Today Tab */}
           <button
             onClick={() => setActiveTab('Today')}
             className={`
-              px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
+              px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 transition-all font-mono uppercase tracking-wide
               ${activeTab === 'Today' 
-                ? 'bg-[#222222] text-white shadow-sm' 
-                : 'bg-transparent text-white/40 hover:text-white/60'
+                ? 'bg-zinc-800 text-zinc-100 shadow-sm' 
+                : 'bg-transparent text-zinc-500 hover:text-zinc-300'
               }
             `}
           >
-            Today
-            <span className={`px-1.5 py-0.5 rounded text-[10px] ${activeTab === 'Today' ? 'bg-[#D48621]/20 text-[#D48621]' : 'bg-white/10 text-white/40'}`}>
+            TODAY
+            <span className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono ${activeTab === 'Today' ? 'bg-amber-500/20 text-amber-500' : 'bg-zinc-800 text-zinc-500'}`}>
               {todayCount}
             </span>
           </button>
@@ -74,32 +74,32 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
           <button
             onClick={() => setActiveTab('Later')}
             className={`
-              px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 transition-all
+              px-3 py-1.5 rounded text-xs font-medium flex items-center gap-2 transition-all font-mono uppercase tracking-wide
               ${activeTab === 'Later' 
-                ? 'bg-[#222222] text-white shadow-sm' 
-                : 'bg-transparent text-white/40 hover:text-white/60'
+                ? 'bg-zinc-800 text-zinc-100 shadow-sm' 
+                : 'bg-transparent text-zinc-500 hover:text-zinc-300'
               }
             `}
           >
-            Later
-            <span className={`px-1.5 py-0.5 rounded text-[10px] ${activeTab === 'Later' ? 'bg-[#8A2BE2]/20 text-[#8A2BE2]' : 'bg-white/10 text-white/40'}`}>
+            LATER
+            <span className={`px-1.5 py-0.5 rounded-[4px] text-[10px] font-mono ${activeTab === 'Later' ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800 text-zinc-500'}`}>
               {laterCount}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Sections */}
-      <div className="space-y-8">
+      {/* Main List Container */}
+      <div className="border border-zinc-800 rounded-lg bg-[#09090b] overflow-hidden divide-y divide-zinc-800/50">
         
         {/* Overdue Section */}
         {overdueTasks.length > 0 && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 relative">
-            <h3 className="text-[10px] font-semibold text-[#E95D5D] tracking-widest mb-4 uppercase ml-1 flex items-center gap-2">
-               <span className="w-1.5 h-1.5 rounded-full bg-[#E95D5D] animate-pulse"></span>
-               Action Required
-            </h3>
-            <div className="flex flex-col gap-3">
+          <div className="bg-red-500/5 border-b border-red-500/10">
+            <div className="px-4 py-2 flex items-center gap-2 border-b border-red-500/10">
+               <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+               <h3 className="text-[10px] font-mono font-semibold text-red-400 tracking-widest uppercase">Critical / Overdue</h3>
+            </div>
+            <div className="divide-y divide-red-500/10">
               {overdueTasks.map(task => (
                 <TaskItem 
                   key={task.id} 
@@ -113,42 +113,37 @@ export const TaskList: React.FC<TaskListProps> = ({ tasks, onToggle, onAddTask }
         )}
 
         {/* To Do Section */}
-        {(todoTasks.length > 0 || completedTasks.length > 0) && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
-            {overdueTasks.length > 0 && (
-               <h3 className="text-[10px] font-semibold text-white/40 tracking-widest mb-4 uppercase ml-1">In Progress</h3>
-            )}
-            <div className="flex flex-col gap-3">
-              {todoTasks.map(task => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  onToggle={onToggle}
-                  isOverdue={false}
-                />
-              ))}
-               {completedTasks.map(task => (
-                <TaskItem 
-                  key={task.id} 
-                  task={task} 
-                  onToggle={onToggle}
-                  isOverdue={false}
-                />
-              ))}
-            </div>
+        {(todoTasks.length > 0 || completedTasks.length > 0) ? (
+          <div className="divide-y divide-zinc-800/50">
+            {todoTasks.map(task => (
+              <TaskItem 
+                key={task.id} 
+                task={task} 
+                onToggle={onToggle}
+                isOverdue={false}
+              />
+            ))}
+             {completedTasks.map(task => (
+              <TaskItem 
+                key={task.id} 
+                task={task} 
+                onToggle={onToggle}
+                isOverdue={false}
+              />
+            ))}
           </div>
+        ) : (
+             relevantTasks.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16 opacity-50">
+                 <div className="w-12 h-12 rounded-lg border border-dashed border-zinc-700 flex items-center justify-center mb-3 bg-zinc-900/50">
+                    <span className="text-xl grayscale opacity-50">✨</span>
+                 </div>
+                 <p className="text-zinc-400 font-mono text-xs uppercase tracking-wider">No Active Tasks</p>
+                 <p className="text-[10px] text-zinc-600 mt-1 font-mono">System Idle</p>
+              </div>
+            )
         )}
 
-        {/* Empty State */}
-        {relevantTasks.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 opacity-30">
-             <div className="w-20 h-20 rounded-full border border-dashed border-white/20 flex items-center justify-center mb-4">
-                <span className="text-3xl grayscale">✨</span>
-             </div>
-             <p className="text-white font-medium text-sm">All caught up</p>
-             <p className="text-xs text-white/40 mt-1">System status: Idle</p>
-          </div>
-        )}
       </div>
 
     </div>

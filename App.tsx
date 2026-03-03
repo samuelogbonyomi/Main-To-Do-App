@@ -113,6 +113,16 @@ const App: React.FC = () => {
     setIsFabOpen(false);
   };
 
+  const handleVoiceAddTask = (newTaskData: Omit<Task, 'id' | 'isCompleted'>) => {
+    const newTask: Task = {
+      ...newTaskData,
+      id: Math.random().toString(36).substr(2, 9),
+      isCompleted: false
+    };
+    setTasks(prev => [...prev, newTask]);
+    // Do not close modal to allow continuous interaction
+  };
+
   const handleToggleTask = (id: string) => {
     const task = tasks.find(t => t.id === id);
     
@@ -152,10 +162,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] font-['IBM_Plex_Sans'] flex justify-center overflow-x-hidden text-white selection:bg-[#D48621]/30">
+    <div className="min-h-screen bg-[#06060a] font-sans flex justify-center overflow-x-hidden text-zinc-100 selection:bg-amber-500/30">
       
-      {/* Background ambient glow */}
-      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#15151A] to-transparent pointer-events-none z-0"></div>
+      {/* Background Grid Pattern */}
+      <div className="fixed inset-0 pointer-events-none z-0" 
+           style={{
+             backgroundImage: `linear-gradient(to right, #27272a 1px, transparent 1px),
+                               linear-gradient(to bottom, #27272a 1px, transparent 1px)`,
+             backgroundSize: '40px 40px',
+             opacity: 0.05
+           }}>
+      </div>
+
+      {/* Ambient Glow - Subtle/Top */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-amber-500/5 blur-[120px] pointer-events-none z-0 rounded-full"></div>
 
       {/* Main Container */}
       <div className="w-full max-w-[900px] relative flex flex-col min-h-screen z-10">
@@ -172,33 +192,32 @@ const App: React.FC = () => {
         </div>
 
         {/* Floating Action Menu */}
-        <div className="fixed bottom-8 left-0 right-0 flex flex-col items-center justify-end z-50 pointer-events-none gap-4">
+        <div className="fixed bottom-8 left-0 right-0 flex flex-col items-center justify-end z-50 pointer-events-none gap-3">
           
           {/* Pop-out Options */}
-          <div className={`flex items-center gap-4 transition-all duration-300 ease-out origin-bottom ${isFabOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none'}`}>
+          <div className={`flex items-center gap-3 transition-all duration-300 ease-out origin-bottom ${isFabOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none'}`}>
              
              {/* Manually Option */}
              <button 
                 onClick={openManual}
-                className="bg-[#131313] text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 hover:bg-[#1A1A1A] hover:-translate-y-1 transition-all pointer-events-auto border border-white/5 group backdrop-blur-md"
+                className="bg-[#09090b] text-zinc-300 px-5 py-2.5 rounded-lg shadow-xl flex items-center gap-3 hover:bg-zinc-900 hover:text-white hover:-translate-y-0.5 transition-all pointer-events-auto border border-zinc-800 group backdrop-blur-md"
              >
-                <div className="w-8 h-8 rounded-full bg-[#D48621]/10 flex items-center justify-center text-[#D48621] group-hover:bg-[#D48621] group-hover:text-white transition-colors">
-                  <PenLine size={16} />
+                <div className="flex items-center justify-center text-amber-500 group-hover:text-amber-400 transition-colors">
+                  <PenLine size={14} />
                 </div>
-                <span className="font-semibold text-sm">Manually</span>
+                <span className="font-mono text-xs tracking-wide uppercase">Manual</span>
              </button>
 
              {/* Dictate Option */}
              <button 
                 onClick={openVoice}
-                className="bg-[#131313] text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 hover:bg-[#1A1A1A] hover:-translate-y-1 transition-all pointer-events-auto border border-white/5 group backdrop-blur-md"
+                className="bg-[#09090b] text-zinc-300 px-5 py-2.5 rounded-lg shadow-xl flex items-center gap-3 hover:bg-zinc-900 hover:text-white hover:-translate-y-0.5 transition-all pointer-events-auto border border-zinc-800 group backdrop-blur-md"
              >
-                <div className="w-8 h-8 rounded-full bg-[#8A2BE2]/10 flex items-center justify-center text-[#8A2BE2] group-hover:bg-[#8A2BE2] group-hover:text-white transition-colors">
-                  <Mic size={16} />
+                <div className="flex items-center justify-center text-amber-500 group-hover:text-amber-400 transition-colors">
+                  <Mic size={14} />
                 </div>
-                <span className="font-semibold text-sm">Dictate</span>
+                <span className="font-mono text-xs tracking-wide uppercase">Dictate</span>
              </button>
-             
           </div>
 
           {/* Main FAB Toggle */}
@@ -206,14 +225,14 @@ const App: React.FC = () => {
             onClick={() => setIsFabOpen(!isFabOpen)}
             className={`
               pointer-events-auto relative z-50 
-              bg-gradient-to-br from-[#D48621] to-[#B06D15] hover:from-[#E59732] hover:to-[#C27E26] text-white 
-              w-16 h-16 rounded-2xl shadow-[0_8px_30px_rgba(212,134,33,0.3)] 
+              bg-[#09090b] hover:bg-zinc-900 text-zinc-400 hover:text-white
+              w-14 h-14 rounded-xl shadow-2xl
               flex items-center justify-center 
-              transition-all duration-300 border border-white/10
-              ${isFabOpen ? 'rotate-45 from-[#C94646] to-[#A33232] shadow-[0_8px_30px_rgba(201,70,70,0.3)]' : 'hover:scale-105'}
+              transition-all duration-300 border border-zinc-800 backdrop-blur-md
+              ${isFabOpen ? 'rotate-45 bg-zinc-900 text-white' : ''}
             `}
           >
-            <Plus size={32} strokeWidth={2.5} />
+            <Plus size={24} strokeWidth={2} />
           </button>
 
         </div>
@@ -230,7 +249,7 @@ const App: React.FC = () => {
       <VoiceModeModal
         isOpen={activeModal === 'voice'}
         onClose={() => setActiveModal('none')}
-        onAdd={handleAddTask}
+        onAdd={handleVoiceAddTask}
       />
 
     </div>

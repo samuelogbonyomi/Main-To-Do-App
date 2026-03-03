@@ -9,7 +9,7 @@ interface VoiceModeModalProps {
   onAdd: (task: Omit<Task, 'id' | 'isCompleted'>) => void;
 }
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY;
 
 // Audio Utils
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -39,10 +39,6 @@ async function decodeAudioData(
   sampleRate: number = 24000,
   numChannels: number = 1
 ): Promise<AudioBuffer> {
-  // Simple resampling/decoding wrapper. 
-  // In a real app, you'd header-wrap this or use a more robust PCM decoder.
-  // Since AudioContext.decodeAudioData expects a full file format (wav/mp3), 
-  // we manually construct the buffer for raw PCM.
   const dataInt16 = new Int16Array(data.buffer);
   const frameCount = dataInt16.length / numChannels;
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
@@ -148,13 +144,13 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
 
       // Connect to Gemini Live
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } }
           },
-          systemInstruction: "You are a friendly, concise task assistant. Your job is to help the user add tasks to their list. When they state a task, call the addTask tool immediately. Be brief. If they say 'Cancel' or 'Stop', just acknowledge.",
+          systemInstruction: `You are a friendly, concise task assistant. Current date is ${new Date().toLocaleDateString()}. Your job is to help the user add tasks to their list. When they state a task, call the addTask tool immediately. Be brief. If they say 'Cancel' or 'Stop', just acknowledge.`,
           tools: [{ functionDeclarations: [addTaskTool] }],
         },
         callbacks: {
@@ -166,16 +162,10 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
             // Start streaming audio
             processor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
-              // Simple conversion to base64 pcm 
-              // Note: The SDK examples use a custom blob creation.
-              // Let's optimize: SDK `sendRealtimeInput` accepts base64 string for audio/pcm
-              
-              // Helper to convert Float32 to Int16 PCM Base64
               let binary = '';
               for (let i = 0; i < inputData.length; i++) {
                 const s = Math.max(-1, Math.min(1, inputData[i]));
                 const int16 = s < 0 ? s * 0x8000 : s * 0x7FFF;
-                // Little endian
                 binary += String.fromCharCode(int16 & 255, (int16 >> 8) & 255);
               }
               const b64Data = btoa(binary);
@@ -202,13 +192,11 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
                source.connect(ctx.destination);
                
                const now = ctx.currentTime;
-               // Schedule gapless
                const startTime = Math.max(now, nextStartTimeRef.current);
                source.start(startTime);
                nextStartTimeRef.current = startTime + buffer.duration;
                
                source.onended = () => {
-                 // Check if queue empty? Hard to tell, but we can set status back to listening eventually
                  if (ctx.currentTime >= nextStartTimeRef.current) {
                    setStatus('listening');
                  }
@@ -229,13 +217,16 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
                     hasReminder: !!args.hasReminder
                   });
 
-                  // Send success response back to model
                   sessionPromise.then(session => {
                     session.sendToolResponse({
                       functionResponses: {
-                        id: call.id,
-                        name: call.name,
-                        response: { result: "Task added successfully" }
+                        functionResponses: [
+                            {
+                                id: call.id,
+                                name: call.name,
+                                response: { result: "Task added successfully" }
+                            }
+                        ]
                       }
                     });
                   });
@@ -262,13 +253,11 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
   };
 
   const stopSession = () => {
-    // 1. Stop Media Tracks
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
 
-    // 2. Disconnect/Close Audio Contexts safely
     if (inputContextRef.current) {
         if (inputContextRef.current.state !== 'closed') {
             inputContextRef.current.close().catch(e => console.warn("InputCtx close error", e));
@@ -282,7 +271,6 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
         outputContextRef.current = null;
     }
 
-    // 3. Close Session if active
     if (sessionRef.current) {
         sessionRef.current.then(session => {
             try {
@@ -309,9 +297,9 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="pointer-events-auto absolute top-6 right-6 w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white/20 hover:text-white transition-all"
+          className="pointer-events-auto absolute top-6 right-6 w-10 h-10 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center text-zinc-500 hover:text-zinc-300 transition-all"
         >
-          <X size={24} />
+          <X size={20} />
         </button>
 
         {/* Visualizer Container */}
@@ -320,39 +308,37 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
            <div 
               className="absolute inset-0 rounded-full blur-3xl transition-all duration-100 ease-out"
               style={{
-                background: `radial-gradient(circle, rgba(212,134,33,0.4) 0%, rgba(73,61,211,0.2) 70%, transparent 100%)`,
-                transform: `scale(${1 + volume * 2})`,
+                background: `radial-gradient(circle, rgba(212,134,33,0.2) 0%, transparent 70%)`,
+                transform: `scale(${1 + volume * 1.5})`,
                 opacity: 0.5 + volume
               }}
            ></div>
 
            {/* The Core Orb */}
            <div 
-              className="w-32 h-32 rounded-full relative z-10 shadow-[0_0_50px_rgba(212,134,33,0.3)] transition-transform duration-75 ease-out"
+              className="w-32 h-32 rounded-full relative z-10 border border-amber-500/30 flex items-center justify-center bg-zinc-900/50 backdrop-blur-md shadow-[0_0_30px_rgba(212,134,33,0.1)] transition-transform duration-75 ease-out"
               style={{
-                background: `linear-gradient(135deg, #493DD3, #D48621)`,
-                transform: `scale(${1 + volume * 0.5})`
+                transform: `scale(${1 + volume * 0.2})`
               }}
            >
-              {/* Inner highlight */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/20 to-white/20"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
            </div>
 
-           {/* Orbiting Ring (Cosmetic) */}
-           <div className="absolute inset-0 border border-white/10 rounded-full animate-[spin_10s_linear_infinite]"></div>
-           <div className="absolute inset-4 border border-white/5 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
+           {/* Orbiting Ring */}
+           <div className="absolute inset-0 border border-zinc-800 rounded-full animate-[spin_10s_linear_infinite]"></div>
+           <div className="absolute inset-8 border border-zinc-800/50 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>
         </div>
 
         {/* Status Text */}
         <div className="text-center space-y-3 animate-in slide-in-from-bottom-4 duration-500">
-          <h3 className="text-3xl font-light text-white tracking-tight">
-            {status === 'connecting' && "Connecting..."}
-            {status === 'listening' && "I'm listening..."}
-            {status === 'speaking' && "AI Speaking..."}
-            {status === 'processing' && "Creating Task..."}
+          <h3 className="text-2xl font-mono font-light text-zinc-200 tracking-tight">
+            {status === 'connecting' && "INITIALIZING..."}
+            {status === 'listening' && "LISTENING..."}
+            {status === 'speaking' && "AI ACTIVE..."}
+            {status === 'processing' && "PROCESSING..."}
           </h3>
-          <p className="text-white/40 text-sm font-medium tracking-wide uppercase">
-            {status === 'listening' ? "Go ahead, say something like 'Add a meeting tomorrow'" : "Please wait"}
+          <p className="text-zinc-500 text-xs font-mono tracking-wide uppercase">
+            {status === 'listening' ? "Say 'Add a meeting tomorrow'" : "Standby"}
           </p>
         </div>
 
@@ -360,9 +346,9 @@ export const VoiceModeModal: React.FC<VoiceModeModalProps> = ({ isOpen, onClose,
         <div className="mt-16 pointer-events-auto flex gap-6">
            <button 
              onClick={isListening ? stopSession : startSession}
-             className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
+             className={`w-16 h-16 rounded-full flex items-center justify-center transition-all border ${isListening ? 'bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'}`}
            >
-             {isListening ? <MicOff size={28} /> : <Mic size={28} />}
+             {isListening ? <MicOff size={24} /> : <Mic size={24} />}
            </button>
         </div>
 
